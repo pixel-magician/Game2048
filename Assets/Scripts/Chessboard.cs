@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿//using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,11 @@ public class Chessboard : MonoBehaviour
     static Dictionary<int, Color> _colorSetting = null;
 
     public static Dictionary<int, Color> ColorSetting { get => _colorSetting; set => _colorSetting = value; }
+
+    /// <summary>
+    /// 棋盘格漫了以后触发
+    /// </summary>
+    public System.Action OnNoSpace;
 
     private void Start()
     {
@@ -59,12 +65,7 @@ public class Chessboard : MonoBehaviour
         {
             two = new Vector2Int(Random.Range(0, _degree), Random.Range(0, _degree));
         }
-        //_data[one.x, one.y] = 2;
-        //_data[two.x, two.y] = 2;
-
-        _data[2, 0] = 2;
-        _data[1, 0] = 4;
-        //_data[0, 3] = 2;
+        RandomAdd(2, 2, 4);
 
 
         //设定颜色值
@@ -89,19 +90,19 @@ public class Chessboard : MonoBehaviour
 
     public void HandleInput()
     {
-        if (Input.anyKeyDown)
-        {
-            float f = Input.GetAxis("Horizontal");
-            if (f < 0) HandleLeft();
-            else HandleRight();
-        }
-        if (Input.anyKeyDown)
-        {
-            float f = Input.GetAxis("Vertical");
-            if (f < 0) HandleLeft();
-            else HandleRight();
-        }
-        return;
+        //if (Input.anyKeyDown)
+        //{
+        //    float f = Input.GetAxis("Horizontal");
+        //    if (f < 0) HandleLeft();
+        //    else HandleRight();
+        //}
+        //if (Input.anyKeyDown)
+        //{
+        //    float f = Input.GetAxis("Vertical");
+        //    if (f < 0) HandleLeft();
+        //    else HandleRight();
+        //}
+        //return;
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             HandleLeft();
@@ -122,6 +123,37 @@ public class Chessboard : MonoBehaviour
 
 
 
+    /// <summary>
+    /// 在随机位置添加格子
+    /// </summary>
+    /// <param name="num">格子的数量</param>
+    /// <param name="number">在格子里填入的随机数</param>
+    void RandomAdd(int num, params int[] number)
+    {
+        //将数值为空的坐标添加到随机数组中，然后从数组中抽取这些坐标。（可以保证每次随机都不会重复）
+        List<Vector2Int> range = new List<Vector2Int>();
+        for (int i = 0; i < _degree; i++)
+        {
+            for (int j = 0; j < _degree; j++)
+            {
+                if (_data[i, j] == 0) range.Add(new Vector2Int(i, j));
+            }
+        }
+        if (range.Count <= 0)
+        {
+            OnNoSpace?.Invoke();
+            return;
+        }
+        for (int i = 0; i < num; i++)
+        {
+            int index = Random.Range(0, range.Count);//随机坐标
+            int value = number[Random.Range(0, number.Length)];//随机数值
+            Vector2Int vector = range[index];
+            _data[vector.x, vector.y] = value;
+            range.RemoveAt(index);//将本次随机的坐标移出，避免下次随机时重复 
+        }
+    }
+
     void HandleLeft()
     {
         for (int r = 0; r < _degree; r++)
@@ -131,6 +163,7 @@ public class Chessboard : MonoBehaviour
                 MoveLeft(r, c);
             }
         }
+        RandomAdd(1, 2, 4);
         Refresh();
     }
     void HandleRight()
@@ -142,6 +175,7 @@ public class Chessboard : MonoBehaviour
                 MoveRight(r, c);
             }
         }
+        RandomAdd(1, 2, 4);
         Refresh();
     }
 
@@ -154,6 +188,7 @@ public class Chessboard : MonoBehaviour
                 MoveUp(r, c);
             }
         }
+        RandomAdd(1, 2, 4);
         Refresh();
     }
     void HandleDown()
@@ -165,6 +200,7 @@ public class Chessboard : MonoBehaviour
                 MoveDown(r, c);
             }
         }
+        RandomAdd(1, 2, 4);
         Refresh();
     }
 
