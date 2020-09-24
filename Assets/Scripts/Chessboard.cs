@@ -26,7 +26,7 @@ public class Chessboard : MonoBehaviour
     /// <summary>
     /// 格子移动
     /// </summary>
-    public UnityAction<int, int, int, int> OnMove;
+    public UnityAction<Vector2Int, Vector2Int, int> OnMove;
     /// <summary>
     /// 刷新事件
     /// </summary>
@@ -228,14 +228,14 @@ public class Chessboard : MonoBehaviour
                 if (_data[x, y] == _data[x, index])//两个格子数值相等，做叠加操作。
                 {
                     _data[x, index] += _data[x, y];
+                    OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(x, index), _data[x, y]);
                     _data[x, y] = 0;
-                    OnMove?.Invoke(x, y, x, index);
                 }
                 else if (y - index > 1)//判断两个格子间隔大于1执行后续逻辑，因为相邻的两个格子不需要移动
                 {
                     _data[x, index + 1] = _data[x, y];//两个格子不相等，移动到这个格子旁边。
+                    OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(x, index + 1), _data[x, y]);
                     _data[x, y] = 0;
-                    OnMove?.Invoke(x, y, x, index + 1);
                 }
                 break;
             }
@@ -243,8 +243,8 @@ public class Chessboard : MonoBehaviour
             else if (index == 0)
             {
                 _data[x, index] = _data[x, y];
+                OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(x, index), _data[x, y]);
                 _data[x, y] = 0;
-                OnMove?.Invoke(x, y, x, index);
                 break;
             }
             index--;
@@ -264,14 +264,14 @@ public class Chessboard : MonoBehaviour
                 if (_data[x, y] == _data[x, index])//两个格子数值相等，做叠加操作。
                 {
                     _data[x, index] += _data[x, y];
+                    OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(x, index), _data[x, y]);
                     _data[x, y] = 0;
-                    OnMove?.Invoke(x, y, x, index);
                 }
                 else if (index - y > 1)//判断两个格子间隔大于1执行后续逻辑，因为相邻的两个格子不需要移动
                 {
                     _data[x, index - 1] = _data[x, y];//两个格子不相等，移动到这个格子旁边。
+                    OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(x, index - 1), _data[x, y]);
                     _data[x, y] = 0;
-                    OnMove?.Invoke(x, y, x, index - 1);
                 }
                 break;
             }
@@ -279,8 +279,8 @@ public class Chessboard : MonoBehaviour
             else if (index == _degree - 1)
             {
                 _data[x, index] = _data[x, y];
+                OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(x, index), _data[x, y]);
                 _data[x, y] = 0;
-                OnMove?.Invoke(x, y, x, index);
                 break;
             }
             index++;
@@ -300,14 +300,14 @@ public class Chessboard : MonoBehaviour
                 if (_data[x, y] == _data[index, y])//两个格子数值相等，做叠加操作。
                 {
                     _data[index, y] += _data[x, y];
+                    OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(index, y), _data[x, y]);
                     _data[x, y] = 0;
-                    OnMove?.Invoke(x, y, index, y);
                 }
                 else if (x - index > 1)//判断两个格子间隔大于1执行后续逻辑，因为相邻的两个格子不需要移动
                 {
                     _data[index + 1, y] = _data[x, y];//两个格子不相等，移动到这个格子旁边。
+                    OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(index + 1, y), _data[x, y]);
                     _data[x, y] = 0;
-                    OnMove?.Invoke(x, y, index + 1, y);
                 }
                 break;
             }
@@ -315,8 +315,8 @@ public class Chessboard : MonoBehaviour
             else if (index == 0)
             {
                 _data[index, y] = _data[x, y];
+                OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(index, y), _data[x, y]);
                 _data[x, y] = 0;
-                OnMove?.Invoke(x, y, index, y);
                 break;
             }
             index--;
@@ -336,14 +336,14 @@ public class Chessboard : MonoBehaviour
                 if (_data[x, y] == _data[index, y])//两个格子数值相等，做叠加操作。
                 {
                     _data[index, y] += _data[x, y];
+                    OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(index, y), _data[x, y]);
                     _data[x, y] = 0;
-                    OnMove?.Invoke(x, y, index, y);
                 }
                 else if (index - x > 1)//判断两个格子间隔大于1执行后续逻辑，因为相邻的两个格子不需要移动
                 {
                     _data[index - 1, y] = _data[x, y];//两个格子不相等，移动到这个格子旁边。
+                    OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(index - 1, y), _data[x, y]);
                     _data[x, y] = 0;
-                    OnMove?.Invoke(x, y, index - 1, y);
                 }
                 break;
             }
@@ -351,8 +351,8 @@ public class Chessboard : MonoBehaviour
             else if (index == _degree - 1)
             {
                 _data[index, y] = _data[x, y];
+                OnMove?.Invoke(new Vector2Int(x, y), new Vector2Int(index, y), _data[x, y]);
                 _data[x, y] = 0;
-                OnMove?.Invoke(x, y, index, y);
                 break;
             }
             index++;
@@ -373,12 +373,14 @@ public class Chessboard : MonoBehaviour
     }
 
 
-    public void AnimationMove(int x1, int y1, int x2, int y2)
+    public void AnimationMove(Vector2Int v1, Vector2Int v2, int value)
     {
-        Vector3 pos = _cubes[x2, y2].transform.position;
-        GameObject g = Instantiate(_cubes[x1, y1].gameObject, _container);
-        g.GetComponent<CubeItem>().Refresh(_data[x1, y1]);
-        g.transform.DOMove(pos, 0.5f).OnComplete(() =>
+        Vector3 pos = _cubes[v2.x, v2.y].transform.position;
+        GameObject g = Instantiate(_cubes[v1.x, v1.y].gameObject, _container.parent);
+        g.GetComponent<CubeItem>().Refresh(value);
+        g.transform.position = _cubes[v1.x, v1.y].gameObject.transform.position;
+        g.GetComponent<RectTransform>().sizeDelta = _cubes[v1.x, v1.y].gameObject.GetComponent<RectTransform>().sizeDelta;
+        g.transform.DOMove(pos, 0.1f).OnComplete(() =>
         {
             Destroy(g);
         });
