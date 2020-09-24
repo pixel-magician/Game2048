@@ -1,7 +1,7 @@
-﻿//using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Chessboard : MonoBehaviour
 {
@@ -21,7 +21,7 @@ public class Chessboard : MonoBehaviour
     /// <summary>
     /// 棋盘格漫了以后触发
     /// </summary>
-    public System.Action OnNoSpace;
+    public UnityEvent OnNoSpace;
 
     private void Start()
     {
