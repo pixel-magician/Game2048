@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using DG.Tweening;
 
 public class Chessboard : MonoBehaviour
 {
@@ -19,14 +20,24 @@ public class Chessboard : MonoBehaviour
     public static Dictionary<int, Color> ColorSetting { get => _colorSetting; set => _colorSetting = value; }
 
     /// <summary>
-    /// 棋盘格漫了以后触发
+    /// 棋盘格满了以后触发
     /// </summary>
-    public UnityEvent OnNoSpace;
+    public UnityEvent OnNoSpace = new UnityEvent();
+    /// <summary>
+    /// 格子移动
+    /// </summary>
+    public UnityAction<int, int, int, int> OnMove;
+    /// <summary>
+    /// 刷新事件
+    /// </summary>
+    public UnityAction<int[,]> OnRefresh;
 
     private void Start()
     {
         Init();
         Create();
+        OnMove += AnimationMove;
+        OnRefresh += Refresh;
     }
     private void Update()
     {
@@ -164,7 +175,7 @@ public class Chessboard : MonoBehaviour
             }
         }
         RandomAdd(1, 2, 4);
-        Refresh();
+        OnRefresh?.Invoke(_data);
     }
     void HandleRight()
     {
@@ -176,7 +187,7 @@ public class Chessboard : MonoBehaviour
             }
         }
         RandomAdd(1, 2, 4);
-        Refresh();
+        OnRefresh?.Invoke(_data);
     }
 
     void HandleUp()
@@ -189,7 +200,7 @@ public class Chessboard : MonoBehaviour
             }
         }
         RandomAdd(1, 2, 4);
-        Refresh();
+        OnRefresh?.Invoke(_data);
     }
     void HandleDown()
     {
@@ -201,7 +212,7 @@ public class Chessboard : MonoBehaviour
             }
         }
         RandomAdd(1, 2, 4);
-        Refresh();
+        OnRefresh?.Invoke(_data);
     }
 
     void MoveLeft(int x, int y)
@@ -218,11 +229,13 @@ public class Chessboard : MonoBehaviour
                 {
                     _data[x, index] += _data[x, y];
                     _data[x, y] = 0;
+                    OnMove?.Invoke(x, y, x, index);
                 }
                 else if (y - index > 1)//判断两个格子间隔大于1执行后续逻辑，因为相邻的两个格子不需要移动
                 {
                     _data[x, index + 1] = _data[x, y];//两个格子不相等，移动到这个格子旁边。
                     _data[x, y] = 0;
+                    OnMove?.Invoke(x, y, x, index + 1);
                 }
                 break;
             }
@@ -231,6 +244,7 @@ public class Chessboard : MonoBehaviour
             {
                 _data[x, index] = _data[x, y];
                 _data[x, y] = 0;
+                OnMove?.Invoke(x, y, x, index);
                 break;
             }
             index--;
@@ -251,11 +265,13 @@ public class Chessboard : MonoBehaviour
                 {
                     _data[x, index] += _data[x, y];
                     _data[x, y] = 0;
+                    OnMove?.Invoke(x, y, x, index);
                 }
                 else if (index - y > 1)//判断两个格子间隔大于1执行后续逻辑，因为相邻的两个格子不需要移动
                 {
                     _data[x, index - 1] = _data[x, y];//两个格子不相等，移动到这个格子旁边。
                     _data[x, y] = 0;
+                    OnMove?.Invoke(x, y, x, index - 1);
                 }
                 break;
             }
@@ -264,6 +280,7 @@ public class Chessboard : MonoBehaviour
             {
                 _data[x, index] = _data[x, y];
                 _data[x, y] = 0;
+                OnMove?.Invoke(x, y, x, index);
                 break;
             }
             index++;
@@ -284,11 +301,13 @@ public class Chessboard : MonoBehaviour
                 {
                     _data[index, y] += _data[x, y];
                     _data[x, y] = 0;
+                    OnMove?.Invoke(x, y, index, y);
                 }
                 else if (x - index > 1)//判断两个格子间隔大于1执行后续逻辑，因为相邻的两个格子不需要移动
                 {
                     _data[index + 1, y] = _data[x, y];//两个格子不相等，移动到这个格子旁边。
                     _data[x, y] = 0;
+                    OnMove?.Invoke(x, y, index + 1, y);
                 }
                 break;
             }
@@ -297,6 +316,7 @@ public class Chessboard : MonoBehaviour
             {
                 _data[index, y] = _data[x, y];
                 _data[x, y] = 0;
+                OnMove?.Invoke(x, y, index, y);
                 break;
             }
             index--;
@@ -317,11 +337,13 @@ public class Chessboard : MonoBehaviour
                 {
                     _data[index, y] += _data[x, y];
                     _data[x, y] = 0;
+                    OnMove?.Invoke(x, y, index, y);
                 }
                 else if (index - x > 1)//判断两个格子间隔大于1执行后续逻辑，因为相邻的两个格子不需要移动
                 {
                     _data[index - 1, y] = _data[x, y];//两个格子不相等，移动到这个格子旁边。
                     _data[x, y] = 0;
+                    OnMove?.Invoke(x, y, index - 1, y);
                 }
                 break;
             }
@@ -330,6 +352,7 @@ public class Chessboard : MonoBehaviour
             {
                 _data[index, y] = _data[x, y];
                 _data[x, y] = 0;
+                OnMove?.Invoke(x, y, index, y);
                 break;
             }
             index++;
@@ -338,15 +361,27 @@ public class Chessboard : MonoBehaviour
 
 
 
-    void Refresh()
+    public void Refresh(int[,] data)
     {
         for (int r = 0; r < 4; r++)
         {
             for (int c = 0; c < 4; c++)
             {
-                _cubes[r, c].Refresh(_data[r, c]);
+                _cubes[r, c].Refresh(data[r, c]);
             }
         }
+    }
+
+
+    public void AnimationMove(int x1, int y1, int x2, int y2)
+    {
+        Vector3 pos = _cubes[x2, y2].transform.position;
+        GameObject g = Instantiate(_cubes[x1, y1].gameObject, _container);
+        g.GetComponent<CubeItem>().Refresh(_data[x1, y1]);
+        g.transform.DOMove(pos, 0.5f).OnComplete(() =>
+        {
+            Destroy(g);
+        });
     }
 
 
